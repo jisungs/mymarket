@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<h1>Hi there</h1>
+<h1>My favorit food is {{object.title}}</h1>
+
+{%if object.content%}
+    <h2>{{object.content}}</h2>
+{%else%}
+    <p>Content coming soon</p>
+{%endif%}
+
+<h2>it's base derectory's base html </h2>
+{% endblock content %}
+
