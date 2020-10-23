@@ -9,7 +9,9 @@ class ProductModelForm(forms.ModelForm):
         model = Product
         fields = [
             'title',
-            'content'
+            'content',
+            'image',
+            'media',
         ]
     def clean_title(self):
         data = self.cleaned_data.get('title')

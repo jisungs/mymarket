@@ -1,5 +1,9 @@
-from django.shortcuts import render, redirect
+import pathlib
+from wsgiref.util import FileWrapper
+from mimetypes import guess_type
 
+from django.shortcuts import render, redirect
+from django.http import Http404, HttpResponse
 # Create your views here.
 from django.contrib.auth.decorators import login_required
 from products.models import Product
@@ -23,7 +27,6 @@ def order_checkout_view(request):
     if order_id == None:
         new_creation = True
         order_obj = Order.objects.create(product=product, user=user)
-    print(order_obj.id)
     if order_obj != None and new_creation == False:
         if order_obj.product.id != product.id:
             order_obj = Order.objects.create(product=product, user= user)
@@ -40,3 +43,33 @@ def order_checkout_view(request):
         # print(form.cleaned_data.get("shipping_address"))
         # print(form.cleaned_data.get("billing_address"))
     return render(request, 'orders/checkout.html', {"form":form, "object":order_obj})
+
+def download_order(request, *args, **kwargs):
+    # return HttpResponse("<h1> This is download page</h1> ")
+    '''
+    Download our order product media,
+    if it exists.
+    '''
+    order_id = 'abc'
+    qs = Product.objects.filter(media__isnull=False)
+    product_obj = qs.first()
+    if not product_obj.media:
+        raise Http404
+    media = product_obj.media
+    product_path = media.path # /abc/adsf/media/csadsf/adsf.csv
+    path = pathlib.Path(product_path) # os.path
+    pk = product_obj.pk
+    ext = path.suffix # .csv, .png, .mov
+    fname = f"my-cool-product-{order_id}-{pk}{ext}"
+    if not path.exists():
+        raise Http404
+    with open(path, 'rb') as f:
+        wrapper = FileWrapper(f)
+        content_type = 'application/force-download'
+        guessed_ = guess_type(path)[0]
+        if guessed_:
+            content_type = guessed_
+        response = HttpResponse(wrapper, content_type=content_type)
+        response['Content-Disposition'] = f"attachment;filename={fname}"
+        response['X-SendFile'] = f"{fname}"
+        return response 

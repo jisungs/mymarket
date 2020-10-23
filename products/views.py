@@ -33,10 +33,15 @@ def search_view(request, *args, **kwargs):
 #     return render(request, "form.html", {})
 @staff_member_required
 def product_create_view(request, *args, **kwargs):
-    form = ProductModelForm(request.POST or None)
+    form = ProductModelForm(request.POST or None, request.FILES or None)
     if form.is_valid():
-
         obj = form.save(commit = False)
+        image = request.FILES.get('image')
+        media = request.FILES.get('media')
+        if image:           
+             obj.image = image
+        if media:
+            obj.media = media
         obj.user = request.user
         obj.save()
         # print(form.cleaned_data)
